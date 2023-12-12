@@ -239,6 +239,6 @@ end
 function SvUtils.SendDiscordWebhook(data)
     local _source = data.source
     if _source then
-        Core.AddWebhook(_source, data.title, data.webhook, data.description, data.color, data.name)
+        Core.AddWebhook(data.title, data.webhook, data.description, data.color, data.name)
     end
 end
