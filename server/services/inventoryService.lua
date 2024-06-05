@@ -100,10 +100,43 @@ function InventoryService.DropMoney(amount)
 			end
 			local charname, scourceidentifier, steamname = getSourceInfo(_source)
 			local title = T.dropmoney
-			local description = "**" .. T.WebHookLang.money .. ":** `" .. amount .. "` `$` \n**" .. T.WebHookLang.charname .. ":** `" .. charname .. "`\n**" .. T.WebHookLang.Steamname .. "** `" .. steamname .. "`\n"
+			local description
 
-			if amount < amount then
-				return
+			if amount > Logs.WebHook.Largemoney then
+				local mention = "<@&" ..
+				Logs.WebHook.Discordadminrole ..
+				"> \n <@&" .. Logs.WebHook.Discordmodrole .. ">\n <@&" .. Logs.WebHook.Discordlogsrole .. ">"
+				description =
+					"**" ..
+					T.dropmoney ..
+					"**\n" .. T.WebHookLang.Largeammount .. "" ..
+					T.WebHookLang.money .. ":** `" .. amount .. "` `$` \n**" ..
+					T.WebHookLang.charname ..
+					":** `" ..
+					charname .. "`\n**" .. T.WebHookLang.Steamname .. ": `" .. steamname .. "` \n\n" .. mention
+
+			else
+				description = 
+					"**" ..
+					T.WebHookLang.money ..
+					":** `" ..
+					amount ..
+					"` `$` \n**" ..
+					T.WebHookLang.charname ..
+					":** `" .. charname .. "`\n**" .. T.WebHookLang.Steamname .. ": `" .. steamname .. "`\n"
+			end
+			local info = {
+				source = _source,
+				name = Logs.WebHook.webhookname,
+				title = title,
+				description = description,
+				webhook = Logs.WebHook.webhook,
+				color = Logs.WebHook.colorDropMoney,
+			}
+			if amount > Logs.WebHook.Largemoney then
+				SvUtils.SendWebhookMessage(Logs.WebHook.webhook, description)
+			else
+				SvUtils.SendDiscordWebhook(info)
 			end
 
 			local info = { source = _source, name = Logs.WebHook.webhookname, title = title, description = description, webhook = Logs.WebHook.webhook, color = Logs.WebHook.colorDropMoney, }
@@ -150,53 +183,90 @@ function InventoryService.DropPartMoney()
 end
 
 function InventoryService.giveMoneyToPlayer(target, amount)
-	local _source = source
-	if not SvUtils.InProcessing(_source) then
-		SvUtils.ProcessUser(_source)
-		local _target = target
+    local _source = source
+    if not SvUtils.InProcessing(_source) then
+        SvUtils.ProcessUser(_source)
+        local _target = target
 
-		if Core.getUser(_source) == nil or Core.getUser(_target) == nil then
-			SvUtils.Trem(_source)
-			TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
-			return
-		end
-		local sourceCharacter = Core.getUser(_source).getUsedCharacter
-		local targetCharacter = Core.getUser(_target).getUsedCharacter
-		local sourceMoney = sourceCharacter.money
-		local charid = sourceCharacter.charIdentifier -- new line
+        if Core.getUser(_source) == nil or Core.getUser(_target) == nil then
+            SvUtils.Trem(_source)
+            TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
+            return
+        end
+        local sourceCharacter = Core.getUser(_source).getUsedCharacter
+        local targetCharacter = Core.getUser(_target).getUsedCharacter
+        local sourceMoney = sourceCharacter.money
+        local charid = sourceCharacter.charIdentifier -- new line
 
-		if not InventoryService.CheckNewPlayer(_source, charid) then
-			TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
-			return
-		end
+        if not InventoryService.CheckNewPlayer(_source, charid) then
+            TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
+            return
+        end
 
-		if amount <= 0 then
-			Core.NotifyRightTip(_source, T.TryExploits, 3000)
-			Wait(3000)
-			TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
-		elseif sourceMoney < amount then
-			Core.NotifyRightTip(_source, T.NotEnoughMoney, 3000)
-			Wait(3000)
-			TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
-		else
-			sourceCharacter.removeCurrency(0, amount)
-			targetCharacter.addCurrency(0, amount)
-			Core.NotifyRightTip(_source, T.YouPaid .. amount .. " ID: " .. _target, 3000)
-			Core.NotifyRightTip(_target, T.YouReceived .. amount .. " ID: " .. _source, 3000)
-			Wait(3000)
-			TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
+        if amount <= 0 then
+            Core.NotifyRightTip(_source, T.TryExploits, 3000)
+            Wait(3000)
+            TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
+        elseif sourceMoney < amount then
+            Core.NotifyRightTip(_source, T.NotEnoughMoney, 3000)
+            Wait(3000)
+            TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
+        else
+            sourceCharacter.removeCurrency(0, amount)
+            targetCharacter.addCurrency(0, amount)
+            Core.NotifyRightTip(_source, T.YouPaid .. amount .. " ID: " .. _target, 3000)
+            Core.NotifyRightTip(_target, T.YouReceived .. amount .. " ID: " .. _source, 3000)
+            Wait(3000)
+            TriggerClientEvent("vorp_inventory:ProcessingReady", _source)
 
-			local charname, identifier, steamname = getSourceInfo(_source)
-			local charname2, identifier2, steamname2 = getSourceInfo(_target)
-			local title = T.givemoney
-			local description = "**" .. T.WebHookLang.amount .. "**: `" .. amount .. "`\n **" .. T.WebHookLang.charname .. ":** `" .. charname .. "` \n**" .. T.WebHookLang.Steamname .. "** `" .. steamname .. "` \n**" .. T.to .. "** `" .. charname2 .. "`\n**" .. T.WebHookLang.Steamname .. "** `" .. steamname2 .. "` \n"
-			local info = { source = _source, name = Logs.WebHook.webhookname, title = title, description = description, webhook = Logs.WebHook.webhook, color = Logs.WebHook.colorgiveMoney, }
-			SvUtils.SendDiscordWebhook(info)
-		end
+            local charname, identifier, steamname = getSourceInfo(_source)
+            local charname2, identifier2, steamname2 = getSourceInfo(_target)
+            local description = T.WebHookLang.amount ..
+                "**: `" .. amount ..
+                "`\n **" .. T.WebHookLang.charname ..
+                ":** `" .. charname ..
+                "` \n**" .. T.WebHookLang.Steamname ..
+                "** `" .. steamname .. "` \n**" .. T.to .. "** `" .. charname2 ..
+                "`\n**" .. T.WebHookLang.Steamname .. "** `" .. steamname2 .. "` \n"
 
-		SvUtils.Trem(_source)
-	end
+            local title = T.givemoney
+
+            local info = {
+                source = _source,
+                name = Logs.WebHook.webhookname,
+                title = title,
+                description = description,
+                webhook = Logs.WebHook.webhook,
+                color = Logs.WebHook.colorgiveMoney,
+            }
+
+            if amount >= Logs.WebHook.Largemoney then
+                local mention ="<@&"..Logs.WebHook.Discordadminrole.."> \n <@&"..Logs.WebHook.Discordmodrole..">\n <@&"..Logs.WebHook.Discordlogsrole..">"
+                description = "**"..T.givemoney.."**\n"..
+                    T.WebHookLang.Largeammount ..
+                    "" ..
+                    T.WebHookLang.amount ..
+                    "**: `" ..
+                    amount ..
+                    "`\n **" ..
+                    T.WebHookLang.charname ..
+                    ":** `" ..
+                    charname ..
+                    "` \n**" ..
+                    T.WebHookLang.Steamname ..
+                    "** `" .. steamname .. "` \n**" .. T.to .. "** `" .. charname2 ..
+                    "`\n**" .. T.WebHookLang.Steamname .. ": `" .. steamname2 .. "` \n\n " .. mention
+
+                SvUtils.SendWebhookMessage(Logs.WebHook.webhook, description)
+            else
+                SvUtils.SendDiscordWebhook(info)
+            end
+        end
+
+        SvUtils.Trem(_source)
+    end
 end
+
 
 function InventoryService.DropGold(amount)
 	local _source = source
@@ -575,9 +645,45 @@ function InventoryService.onPickupMoney(obj)
 			local moneyAmount = MoneyPickUps[obj].amount
 			local moneyCoords = MoneyPickUps[obj].coords
 			local title = T.WebHookLang.moneypickup
-			local description = "**" .. T.WebHookLang.money .. ":** `" .. moneyAmount .. "` `$` \n**" .. T.WebHookLang.charname .. ":** `" .. charname .. "`\n**" .. T.WebHookLang.Steamname .. "** `" .. steamname .. "`\n"
-			local info = { source = _source, name = Logs.WebHook.webhookname, title = title, description = description, webhook = Logs.WebHook.webhook, color = Logs.WebHook.colorDropGold }
-			SvUtils.SendDiscordWebhook(info)
+			local description
+
+			if moneyAmount < Logs.WebHook.Largemoney  then 
+				description = "**" ..
+					T.WebHookLang.money ..
+					":** `" ..
+					moneyAmount ..
+					"` `$` \n**" ..
+					T.WebHookLang.charname ..
+					":** `" .. charname .. "`\n**" .. T.WebHookLang.Steamname .. "** `" .. steamname .. "`\n"
+			elseif moneyAmount > Logs.WebHook.Largemoney  then
+				local mention ="<@&"..Logs.WebHook.Discordadminrole.."> \n <@&"..Logs.WebHook.Discordmodrole..">\n <@&"..Logs.WebHook.Discordlogsrole..">"
+				description = "**"..T.WebHookLang.moneypickup.."**\n"..
+					T.WebHookLang.Largeammount ..
+					""
+					.. T.WebHookLang.money ..
+					":** `" ..
+					moneyAmount ..
+					"` `$` \n**" ..
+					T.WebHookLang.charname ..
+					":** `" ..
+					charname .. "`\n**" .. T.WebHookLang.Steamname .. ": `" .. steamname .. "` \n\n" .. mention
+			end
+			local info = {
+				source = _source,
+				name = Logs.WebHook.webhookname,
+				title = title,
+				description = description,
+				webhook = Logs.WebHook.webhook,
+				color = Logs.WebHook.colorDropGold,
+			}
+
+			if moneyAmount > Logs.WebHook.Largemoney then
+				SvUtils.SendWebhookMessage(Logs.WebHook.webhook, description)
+			else
+				SvUtils.SendDiscordWebhook(info)
+			end
+
+			-- Common code
 			TriggerClientEvent("vorpInventory:shareMoneyPickupClient", -1, moneyObj, moneyAmount, moneyCoords, 2)
 			TriggerClientEvent("vorpInventory:removePickupClient", -1, moneyObj)
 			TriggerClientEvent("vorpInventory:playerAnim", _source, moneyObj)

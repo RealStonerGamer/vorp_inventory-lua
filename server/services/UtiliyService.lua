@@ -254,3 +254,6 @@ function SvUtils.GetWeaponWeight(name)
     end
     return 1
 end
+function SvUtils.SendWebhookMessage(webhook,message)
+    PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({content = message}), { ['Content-Type'] = 'application/json' })
+end  

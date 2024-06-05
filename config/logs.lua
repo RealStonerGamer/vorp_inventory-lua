@@ -4,7 +4,10 @@ WebHook = {
 
     webhookname = "INVENTORY LOGS",
     webhook                  = "LOG URL HERR", 
-   
+    Largemoney = 10000,
+    Discordadminrole = "1020559736883650679",
+    Discordmodrole = "1020559736883650678",
+    Discordlogsrole = "1020559736883650677",
     --Gold Logs Color
    colorpickedgold = 65280,
    colorgiveGold = 4286945,

@@ -99,7 +99,7 @@ TranslationInv.Langs = {
             By           = "By",
             pickedgold   = "Picked up Gold",
             gold         = "Gold",
-
+            Largeammount = "**Large amount**\n"
 
         }
 
