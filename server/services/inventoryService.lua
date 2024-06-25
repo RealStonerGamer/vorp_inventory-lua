@@ -1022,6 +1022,8 @@ function InventoryService.GiveItem(itemId, amount, target)
 	local function updateClient(addedItem)
 		TriggerClientEvent("vorpInventory:receiveItem", _target, itemName, addedItem:getId(), amount, item:getMetadata())
 		TriggerClientEvent("vorpInventory:removeItem", _source, itemName, item:getId(), amount)
+		local data = { name = itemName, id = item:getId(), metadata = item:getMetadata() }
+		TriggerEvent("vorp_inventory:Server:OnItemRemoved", data, _source)
 		if item:getCount() - amount <= 0 then
 			DBService.DeleteItem(charid, item:getId())
 			sourceInventory[item:getId()] = nil
@@ -1143,10 +1145,11 @@ end
 
 Core.Callback.Register("vorpinventory:getammoinfo", function(source, cb)
 	if not AmmoData[source] then
+		print("AmmoData not found")
 		return cb(false)
 	end
 
-	cb(AmmoData[source])
+	return cb(AmmoData[source])
 end)
 
 -- give ammo to player
@@ -1204,7 +1207,7 @@ function InventoryService.updateAmmo(ammoinfo)
 	local query = "UPDATE characters Set ammo=@ammo WHERE charidentifier=@charidentifier"
 	local params = { charidentifier = ammoinfo.charidentifier, ammo = json.encode(ammoinfo.ammo) }
 	DBService.updateAsync(query, params, function(result)
-		if result then
+		if result and _source then
 			AmmoData[_source] = ammoinfo
 		end
 	end)
@@ -1456,13 +1459,26 @@ function InventoryService.DoesHavePermission(invId, job, grade, Table)
 		return true
 	end
 
-	for jobname, jobgrade in pairs(Table) do
-		if jobname == job then
-			if grade >= jobgrade then
-				return true
-			end
-		end
+	if Table[job] and Table[job] >= grade then
+		return true
 	end
+
+	return false
+end
+
+function InventoryService.DoesCharIdHavePermission(invId, charid, Table)
+	if not CustomInventoryInfos[invId]:isPermEnabled() then
+		return true
+	end
+
+	if not Table or not next(Table) then
+		return true
+	end
+
+	if Table[charid] then
+		return true
+	end
+
 	return false
 end
 
@@ -1548,8 +1564,9 @@ function InventoryService.MoveToCustom(obj)
 	local job = sourceCharacter.job
 	local grade = sourceCharacter.jobGrade
 	local sourceCharIdentifier = sourceCharacter.charIdentifier
-	local Table = CustomInventoryInfos[invId]:getPermissionMoveTo()
+	local Table, Table1 = CustomInventoryInfos[invId]:getPermissionMoveTo()
 	local CanMove = InventoryService.DoesHavePermission(invId, job, grade, Table)
+	local CanMove1 = InventoryService.DoesCharIdHavePermission(invId, sourceCharIdentifier, Table1)
 	local IsBlackListed = InventoryService.CheckIsBlackListed(invId, string.lower(item.name)) -- lower so we can checkitems and weapons
 
 
@@ -1561,7 +1578,7 @@ function InventoryService.MoveToCustom(obj)
 		return Core.NotifyObjective(_source, "Item is blackListed", 5000)
 	end
 
-	if not CanMove then
+	if not CanMove or not CanMove1 then -- either job or char id
 		return Core.NotifyObjective(_source, "You dont have permision to move into the storage", 5000)
 	end
 
@@ -1627,9 +1644,11 @@ function InventoryService.TakeFromCustom(obj)
 	local sourceCharIdentifier = sourceCharacter.charIdentifier
 	local job = sourceCharacter.job
 	local grade = sourceCharacter.jobGrade
-	local Table = CustomInventoryInfos[invId]:getPermissionTakeFrom()
+	local Table, Table1 = CustomInventoryInfos[invId]:getPermissionTakeFrom()
 	local CanMove = InventoryService.DoesHavePermission(invId, job, grade, Table)
-	if not CanMove then
+	local CanMove1 = InventoryService.DoesCharIdHavePermission(invId, sourceCharIdentifier, Table1)
+
+	if not CanMove or not CanMove1 then
 		return Core.NotifyObjective(_source, "you dont have permmissions to take from this storage", 5000) -- add your own notifications
 	end
 
@@ -1672,16 +1691,11 @@ function InventoryService.TakeFromCustom(obj)
 		if item.count and amount > item.count then
 			return print("Error: Amount is greater than item count")
 		end
-		local itemTotalWeight = item.weight and item.weight * amount or amount
+
 		local canCarryItem = InventoryAPI.canCarryItem(_source, item.name, amount)
-		local invHasSpace = InventoryAPI.canCarryAmountItem(_source, itemTotalWeight)
 
 		if not canCarryItem then
-			return Core.NotifyRightTip(_source, "Cant carry more of this item stack limit achieved", 2000)
-		end
-
-		if not invHasSpace then
-			return Core.NotifyRightTip(_source, T.fullInventory, 2000)
+			return Core.NotifyRightTip(_source, "Cant carry more of this item stack limit achieved or inv is full", 2000)
 		end
 
 		InventoryService.addItem(_source, "default", item.name, amount, item.metadata, function(itemAdded)
@@ -1778,12 +1792,7 @@ function InventoryService.MoveToPlayer(obj)
 			return
 		end
 
-		local res = InventoryAPI.canCarryAmountItem(target, amount)
-		if not res then
-			return Core.NotifyObjective(_source, T.fullInventory, 2000)
-		end
-
-		res = InventoryAPI.canCarryItem(target, item.name, amount)
+		local res = InventoryAPI.canCarryItem(target, item.name, amount)
 		if not res then
 			return Core.NotifyObjective(_source, "Cant carry more of this item", 2000)
 		end
@@ -1848,12 +1857,7 @@ function InventoryService.TakeFromPlayer(obj)
 			end
 		end, item.name)
 	else
-		local res = InventoryAPI.canCarryAmountItem(_source, amount)
-		if not res then
-			return Core.NotifyObjective(_source, T.fullInventory, 2000)
-		end
-
-		res = InventoryAPI.canCarryItem(_source, item.name, amount)
+		local res = InventoryAPI.canCarryItem(_source, item.name, amount)
 		if not res then
 			return Core.NotifyObjective(_source, "Cant carry more of this item", 2000)
 		end

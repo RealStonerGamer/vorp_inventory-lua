@@ -195,7 +195,7 @@ function exports.vorp_inventory:subItem(source, item, amount, metadata, callback
 --- set item metadata
 ---@param source integer player id
 ---@param itemId number item id
----@param metadata table item metadata
+---@param metadata table `{ description:string?, image:string?}` **description** and **image** are reserved keys if they are not defined they will be ignored, image is the image name to apply
 ---@param amount number? amount of item
 ---@param callback fun(boolean:boolean)? callback function async or sync leave nil
 function exports.vorp_inventory:setItemMetadata(source, itemId, metadata, amount, callback) end
@@ -273,6 +273,20 @@ function exports.vorp_inventory:AddPermissionMoveToCustom(invId, jobName, jobgra
 ---@param jobName string job name
 ---@param jobgrade number job grade
 function exports.vorp_inventory:AddPermissionTakeFromCustom(invId, jobName, jobgrade) end
+
+--- see [documentation](https://vorpcore.github.io/VORP_Documentation/api/inventory#inventory-exports)<br>
+--- add char id permissions to move item to inventories
+---@param invId string inventory id
+---@param charId number char id
+---@param state boolean | nil state of permission nil will remove the permission if char id exists true or false will set the permission
+function exports.vorp_inventory:AddCharIdPermissionMoveToCustom(invId, charId, state) end
+
+--- see [documentation](https://vorpcore.github.io/VORP_Documentation/api/inventory#inventory-exports)<br>
+--- add char id permissions to take item from inventories
+---@param invId string inventory id
+---@param charId number char id
+---@param state boolean | nil state of permission nil will remove the permission if char id exists true or false will set the permission
+function exports.vorp_inventory:AddCharIdPermissionTakeFromCustom(invId, charId, state) end
 
 --- see [documentation](https://vorpcore.github.io/VORP_Documentation/api/inventory#inventory-exports)<br>
 --- black list items or weapons
