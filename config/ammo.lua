@@ -50,6 +50,8 @@ SharedData.MaxAmmo    = {
     AMMO_HATCHET_HEWING = 10,
     AMMO_HATCHET_VIKING = 10,
     AMMO_HATCHET = 10,
+    AMMO_MOONSHINEJUG_MP = 100,  -- Max ammo transfer limit for moonshine jug MP
+
 }
 
 -- you can change this to your language
@@ -105,6 +107,8 @@ SharedData.AmmoLabels = {
     AMMO_HATCHET_HEWING = "Hachet Hewing",
     AMMO_HATCHET_VIKING = "Hachet Viking",
     AMMO_HATCHET = "Hatchet ammo",
+    AMMO_MOONSHINEJUG_MP = "Moonshine Jugs MP",
+
 }
 
 -- dont touch this
@@ -183,5 +187,9 @@ SharedData.AmmoTypes  = {
         "AMMO_HATCHET_HEWING",
         "AMMO_HATCHET_VIKING",
         "AMMO_HATCHET",
-    }
+    },
+    [1701457723] = {
+        "AMMO_MOONSHINEJUG_MP"
+    },
+
 }
