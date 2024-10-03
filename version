@@ -1,3 +1,76 @@
+<3.8>
+- new exports for custom inventories using char id permissions just like jobs
+- new feature to pass image variable with item name for metadata to display different images
+- new exports for custom inventories add/get items
+- added to  export registerCustomInventory webhook variable that can contain url link for logs of each custom inv
+- export registerCustomInventory now returns with an object including methods getters and setters.
+- updated types for exports
+- fix canCarryWeapons not counting with ammount requested because of the new weight feature
+- fix missing method for setLabel on weapons
+- fix OnItemCreated missing event in GiveItem function
+- fix not saving ammo when its empty in the database
+- refactor some code for optimisation like jobs look up
+- fix dialog window would stay open if users disconnect internet to dupe.
+- make sure to update fxmanifest and all other files.
+<3.7>
+- added msgpack send to items to client to reduce load 
+- added new exports for client side mostly for weapons see client/exports.lua
+- added item names to tables items_crafted and characters_inventories for easier look up (you must run the sql code provived in the discord or commits)
+- fixed getAmmo there was a typo
+- fixed GiveWeapon wasnt properly checking the weight
+- added a check to make sure weapons name are valid when given
+- fixed canCarryWeapons when  using names wasnt returning the proper value
+- added some strings to translation regarding the last changes about weight
+- added some native declararations since they are not on release version
+- fixed exports add weapons desc label and serial number that were not synced in client
+- updated types for exports
+- added server side export getUserAmmo will return ammo that is cached on the server
+- fixed openPlayerInv only allowing to open once
+- fixed non shared inventories would not remove items from custom containers when it was set to not be shared
+- make sure to update all files remove old back up and add new DO NOT REPLACE
+<3.6>
+- inventory weight based 
+- weapons now count towards inventory weight
+- UI changes 
+- see weapons used marked
+- added new file to make item groups easily
+- fixed permissions for secondary inventories
+- deprecated canCarryItems
+- WIP items decay, is only for display at the moment (coming on next updates)
+- new export to openPlayerInventories
+- new export client side to use weapon without having to open inventory
+- new event listeners (check documentation) and extra parameters added to current ones
+- this update requires database changes and vorp_core to be updated
+- function to clean up items_crafted
+- canCarryWeapons extra param now supports weapon name or hash
+<3.5>
+- exploit fixed when using devtools to insert items to custom inventories
+- added ItemOnUse event hook ( useful when you dont have acces to a script)
+- added statebag for getting current serial number of a weapon
+- other minor improvements and optimisation
+- added feature to drag and press shift to move all items to custom inventories or main
+<3.4>
+- small fixes were added to this version
+- item hook to use in your scripts
+- added rol to show in inventory
+- drop item without input if qty is 1
+- event to lock unlock player inventory
+- lock inventory if player is cuffed or hogtied
+- fix showing translation to weapons that dont have serial numbers in second inventories
+- detection of player is offline will close inventory.
+- make sure to update all files.
+<3.3>
+ - fixed items with metadata being removed and then addd back on relog
+ - added some error handling for some functions
+ - added new export to get core object
+ - added new callbacks
+ - added custom description for weapons
+ - added exports for modifying/adding custom label description and serial numbers from weapons
+ - removed dataview file , using vorp core file instead.
+ - refactor opening custom inventories with a notify saying its busy
+ - item trade logs fixed
+ - added config file just for logs
+ - make sure to update all files
 <3.2>
 - added serial numbers for weapons 
 - added custom weapon nick names 

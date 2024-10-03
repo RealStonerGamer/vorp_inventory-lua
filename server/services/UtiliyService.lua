@@ -1,4 +1,4 @@
----@diagnostic disable: undefined-global
+local Core           = exports.vorp_core:GetCore()
 
 ---@class SvUtils @Server Utility Service
 ---@field FindAllWeaponsByName fun(invId: string, name: string): table<number, Weapon>
@@ -10,9 +10,8 @@
 ---@field InProcessing fun(id: number): boolean
 ---@field Trem fun(id: string, keepInventoryOpen: boolean)
 ---@field DoesItemExist fun(itemName:string,api:string): boolean
-SvUtils = {}
+SvUtils              = {}
 
---@Processing user when making inventory transactions
 local processingUser = {}
 math.randomseed(GetGameTimer())
 
@@ -193,10 +192,9 @@ end
 function SvUtils.DoesItemExist(itemName, api)
     if ServerItems[itemName] then
         return true
-    else
-        Log.error("[^2" .. api .. "7] Item [^3" .. tostring(itemName) .. "^7] does not exist in DB.")
-        return false
     end
+    print("[^2" .. api .. "7] Item [^3" .. tostring(itemName) .. "^7] does not exist in DB.")
+    return false
 end
 
 --- generate a weapon label
@@ -223,6 +221,14 @@ function SvUtils.filterWeaponsSerialNumber(name)
     return true
 end
 
+--- generate a unique random id
+---@return string
+function SvUtils.GenerateUniqueID()
+    local time = os.time()
+    local randomNum = math.random(1000000, 9999999)
+    return tostring(time) .. tostring(randomNum)
+end
+
 --- generate a unique serial number
 ---@return string
 function SvUtils.GenerateSerialNumber(name)
@@ -241,4 +247,13 @@ function SvUtils.SendDiscordWebhook(data)
     if _source then
         Core.AddWebhook(data.title, data.webhook, data.description, data.color, data.name)
     end
+end
+
+function SvUtils.GetWeaponWeight(name)
+    for _, weapon in ipairs(SharedData.Weapons) do
+        if weapon.HashName == name:upper() then
+            return weapon.Weight
+        end
+    end
+    return 1
 end
